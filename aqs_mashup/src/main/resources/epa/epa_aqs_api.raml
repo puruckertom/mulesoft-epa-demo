@@ -1,0 +1,165 @@
+#%RAML 0.8
+---
+title: AQS Data
+version: 1.0
+baseUri: https://aqs.epa.gov/api
+protocols: [HTTPS]
+#mediaType: text/csv
+#File last modified on September 23, 2015
+documentation: 
+ !include doc_intro.raml
+ 
+  #Add an "about the data" section.
+      
+/rawData:
+  get:
+    description: !include rawData_intro.txt
+    queryParameters:
+      !include rawData_parameters.raml  
+    responses:
+      200:
+        body: 
+          "*/*":
+        description: !include rawData_output.md
+      400:
+        description: !include response_400.txt
+      500:
+        description: !include response_500.txt
+      503:
+        description:  !include response_503.txt
+      
+/rawDataNotify:
+  get:
+    description: !include rawDataNotify_intro.txt
+    queryParameters:
+      !include rawData_parameters.raml 
+    responses:
+      200:
+        body: 
+          "*/*":
+        description: The transaction ID of the request.  The request will be processed in the backgroud and an email will be sent to the user when it is ready for retrieval. !include rawData_output.md
+      400:
+        description: !include response_400.txt
+      500:
+        description: !include response_500.txt
+      503:
+        description:  !include response_503.txt
+      
+/status:
+  get:
+    description: !include status_intro.txt 
+    queryParameters:
+      id:
+        displayName: id (Transaction ID)
+        type: integer
+        description: The transaction ID of the previously submitted request for data.
+        example: 123456789
+        required: true
+      user:
+        displayName: user (User ID)
+        type: string
+        description:  The user ID for the requesting account.  Usually an email address.
+        example: api.user@example.com
+        required: false
+      pw:
+        displayName: pw (Password)
+        type: string
+        description: The password for the requesting account.
+        example: passwordtext
+        required: false
+    responses:
+      200:
+        body:
+          "*/*":
+        description: !include status_output.md
+      500:
+        description: !include response_500.txt
+      503:
+        description:  !include response_503.txt
+
+/retrieve:
+  get:
+    description: !include retrieve_intro.txt
+    queryParameters:
+      id:
+        displayName: id (Transaction ID)
+        type: integer
+        description: The transaction ID of the previously submitted request for data.
+        example: 123456789
+        required: true
+    responses:
+      200:
+        body:
+          "*/*":
+        description: The mime encoded file containing the data resulting from the query request in the format requested.
+      500:
+        description: !include response_500.txt
+      503:
+        description:  !include response_503.txt
+
+/list:
+  get:
+    description: Returns a list of valid values for a variable.  Requesting a list takes three parts.  The list name, the qualifier (what to filter the list on), and the resource - only one of which is currently available.  To get a list of parameters (the list name) that belong to the Criteria parameter class (the qualifier) https://aqs.epa.gov/api/list?name=param&pc=CRITERIA
+    queryParameters:
+      name:
+        displayName: name (List Name)
+        type: string
+        description: The variable for which to show a list of valid values.
+        enum: [ state, county, site, pc, param, format, cbsa, csa, duration, agency ]
+        example: param
+        required: true
+      qualifier:
+        displayName: qualifier (Qualifier)
+        type: string
+        description: The name of another variable to filter the list on.
+        example: pc
+        enum: [ state, county, pc, agency_code ]
+        required: false
+      resource:
+        displayName: resource (Resource/Service Name)
+        type: string
+        description: The name of the service to use as a reference for this list.  There is currently only one valid value, so this is not required.
+        enum: [ rawData ]
+        example: rawData
+        required: false
+      user:
+        displayName: user (User ID)
+        type: string
+        description:  The user ID for the requesting account.  Usually an email address.
+        example: api.user@example.com
+        required: false
+      pw:
+        displayName: pw (Password)
+        type: string
+        description: The password for the requesting account.
+        example: passwordtext
+        required: false
+    responses:
+      200:
+        body:
+          "*/*":
+        description: A tab delimeted list of values and meanings.
+      400:
+        description: !include response_400.txt
+      500:
+        description: !include response_500.txt
+      503:
+        description:  !include response_503.txt
+/serviceAvailable:
+  get:
+    description: Returns a response if our services are working. Example https://aqs.epa.gov/api/serviceAvailable
+    responses:
+      200:
+        body:
+          "*/*":
+        description: The string "READY @" followed by the date and time at the server (US Eastern Time Zone).
+      500:
+        description: !include response_500.txt
+      503:
+        description:  !include response_503.txt
+
+
+
+
+
+

@@ -1,0 +1,21 @@
+#%RAML 0.8
+---
+title: AQS Mashup API
+version: 1.0
+baseUri: http://localhost:8082/api
+/aqs:
+  get:
+    description: Ozone reports near the address
+    queryParameters:
+      address:
+        displayName: address
+        type: string
+        description: address
+        example: 11645 Atwood Road, Auburn, CA 95603
+        required: true
+    responses:
+      200:
+        body: 
+         application/json:
+          example: !include api_response_example.json
+        description: Get ozone data near the address

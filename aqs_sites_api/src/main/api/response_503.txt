@@ -1,0 +1,1 @@
+Our API is down.  We have weekly scheduled maintenance Sundays from 1800 - 2359 eastern standard time (GMT-5).  If you are getting this message outside that time window, we are experiencing unexpected problems.  You may check our news feed at http://www3.epa.gov/airquality/airdata/rssairdata.xml or email aqsdatamart@epa.gov for additional information.

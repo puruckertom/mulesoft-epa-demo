@@ -1,0 +1,7 @@
+Returns raw data that match your query criteria.  This is an asynchronous query that returns a Transaction ID number.  The query is run on our servers and when it is complete, an email will be sent you with a link to your data (tied to the Transaction ID).  After submitting this query, you may close your browser or end your session.
+
+Example. To select ozone data for Durham County, NC, for May 01, 2011, using an asynchronous query and returning data in DMCSV format
+
+(This URL will not work unless you replace the asterisks with your credentials)
+
+https://aqs.epa.gov/api/rawDataNotify?user=*&pw=**&format=DMCSV&param=44201&bdate=20110501&edate=20110501&state=37&county=063 

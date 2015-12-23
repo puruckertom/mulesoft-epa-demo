@@ -1,0 +1,14 @@
+ - title: Introduction
+   content: |
+     Welcome to the AQS (Air Quality System) API.  AQS contains the data that the US EPA has collected via the national ambient air monitoring program.  It also includes the associated aggregate values calculated by EPA (8-hour, daily, annual, etc.). The intended users of the Data Mart are air quality data analysts in the regulatory, academic, and health research communities who are familiar with AQS data.  This document only describes the API and not the nuances of the air quality data.
+     
+ - title: About Notify Services
+   content: |
+    You will see that each service is available in two forms.  The basic service and the Notify service.  The basic service is a synchronous service that requires the connection to remain open to complete.  This is intended for users of the GUI.  The Notify service is an asynchronous service that allows the connection to be ended and the data retrieved later. It is the nominal form to use if accessing the API and not the GUI and can be used in conjunction with the status and retrieve services.  __The data from each service is exactly the same, the only difference is the delivery mechanism.__
+ 
+ - title: How to use this document
+   content: |  
+     Each service is listed below.  First the class of service and then the name of the service (in our case, these are identical).  Click on the name of the service to get a brief description of the data it provides and an example URL.  Clikc on the "get" button to see the list of all variables that can be used to query the data (on the "Rrequest" tab).  Click the "Response" tab to see the description of possible responses and a description the contents of the returned data.
+ 
+ - title: Registration
+   content: Registration is required to use this API.  To register please visit https://aqs.epa.gov/signup. 

@@ -1,0 +1,10 @@
+Bad request.  Some of the query criteria entered are invalid.  
+
+There could be serveral reasons for this.  We attempt to inform you if your credentials are invalid, if the other query parameters are invalid, or if the query exceeds the allowable size limits.  However some browsers intercept HTTP 400 responses and remove the detailed message.
+
+Things to check:
+* All required query parameters have been included
+* The query size limits have not been exceeded https://aqs.epa.gov/aqsweb/documents/gui_query.html#limits
+* The date formats are correct (YYYYMMDD with no punctuation)
+* Codes have been used where exptected (e.g., state code, duration code)
+

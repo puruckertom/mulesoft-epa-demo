@@ -1,0 +1,140 @@
+#%RAML 0.8
+      user:
+        displayName: user (User ID)
+        type: string
+        description:  The user ID for the requesting account.  Usually an email address.
+        example: api.user@example.com
+        required: true
+      pw:
+        displayName: pw (Password)
+        type: string
+        description: The password for the requesting account.
+        example: passwordtext
+        required: true
+      format:
+        displayName: format (Output Format)
+        type: string
+        default: DMCSV
+        description: The desired format for the output of the query.
+        example: DMCSV
+        enum: [ DMCSV, AQCSV, AQS, JSON ]
+        required: false
+      pc:
+        displayName: pc (Parameter Class)
+        type: string
+        description: The group of parameters you would like to filter the query results on.
+        example: CRITERIA
+        required: false
+      param:
+        displayName: param (Parameter Code)
+        type: string
+        minLength: 5
+        maxLength: 5
+        description: The 5 digit AQS parameter code you would like to filter the query results on.
+        example: 44201
+        required: false
+      bdate:
+        displayName: bdate (Begin Date)
+        type: string
+        description: The begin date of data in YYYYMMDD format.
+        example: 20140101
+        required: true
+      edate:
+        displayName: edate (End Date)
+        type: string
+        description: The end date of data in YYYYMMDD format.
+        example: 20141231
+        required: true
+      cbdate:
+        displayName: cbdate (Change Begin Date of data)
+        type: string
+        description: Filters data to return only values that changed after this date.  YYYYMMDD format.
+        example: 20150101
+        required: false
+      cedate:
+        displayName: cedate (Change End Date of data)
+        type: string
+        description: Filters data to return only values that changed before this date.  YYYYMMDD format.
+        example: 20151231
+        required: false
+      state:
+        displayName: state (State Code)
+        type: string
+        minLength: 2
+        maxLength: 2
+        description: The 2 digit (leading zeroes required) FIPS code for the state you would like to filter the query results on.
+        example: 01
+        required: false
+      county:
+        displayName: county (County Code)
+        type: string
+        minLength: 3
+        maxLength: 3
+        description: The 3 digit (leading zeroes required) FIPS code for the county you would like to filter the query results on.
+        example: 089
+        required: false
+      site:
+        displayName: site (Site Number)
+        type: string
+        minLength: 4
+        maxLength: 4
+        description: The 4 digit (leading zeroes required) AQS ID number for the site within the county that you would like to filter the query results on.
+        example: 0014
+        required: false
+      cbsa:
+        displayName: cbsa (CBSA Code)
+        type: string
+        minLength: 5
+        maxLength: 5
+        description: The 5 digit (leading zeroes required) Census code for the Core Based Statistical Area you would like to filter the query results on.
+        example: 26620
+        required: false
+      csa:
+        displayName: csa (CSA Code)
+        type: string
+        minLength: 3
+        maxLength: 3
+        description: The 3 digit (leading zeroes required) Census code for the Consolidated Statistical Area you would like to filter the query results on.
+        example: 290
+        required: false
+      minlat:
+        displayName: minlat (Minimum Latitude)
+        type: number
+        description: The southernmost extent of a bounding box query.
+        example: 34.66
+        required: false
+      maxlat:
+        displayName: maxlat (Maximum Latitude)
+        type: number
+        description: The northernmost extent of a bounding box query.
+        example: 34.7
+        required: false
+      minlon:
+        displayName: minlon (Minimum Longitude)
+        type: number
+        description: The westernmost extent of a bounding box query.  Negative values represent the western hemisphere.
+        example: -86.6166
+        required: false
+      maxlon:
+        displayName: maxlon (Maximum Longitude)
+        type: number
+        description: The easternmost extent of a bounding box query.  Negative values represent the western hemisphere.
+        example: -86.5
+        required: false
+      dur:
+        displayName: dur (Duration Code)
+        type: string
+        minLength: 1
+        maxLength: 1
+        description: The AQS duration code that you would like to filter the query results on.
+        example: 7
+        required: false
+      frmonly:
+        displayName: frmonly (FRM Only Indicator)
+        type: string
+        minLength: 1
+        maxLength: 1
+        description: Data from Federal Reference (and Equivalent) Methods only.  Y will return only FRM/FEM data. N will return data that is not FRM/FEM. Leaving this option off will return all data. 
+        example: Y
+        required: false
+  

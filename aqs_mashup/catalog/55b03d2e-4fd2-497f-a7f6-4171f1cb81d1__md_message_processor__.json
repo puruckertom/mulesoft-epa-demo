@@ -1,0 +1,11 @@
+{
+    "inputMessageMetadata": {
+        "messagePayload": {
+            "connectorName": "#_custom_mule_metadata_type_#",
+            "typeId": "geocode_output"
+        }
+    },
+    "outputMessageMetadata": {},
+    "id": "55b03d2e-4fd2-497f-a7f6-4171f1cb81d1",
+    "version": "5.2.0.0"
+}

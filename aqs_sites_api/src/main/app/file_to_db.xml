@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+    <db:mysql-config name="MySQL_Configuration" host="${db.host}" port="${db.port}" user="${db.user}" password="${db.pass}" database="${db.name}" doc:name="MySQL Configuration"/>
+    <batch:job name="aqs_site_loaderBatch">
+        <batch:input>
+            <file:inbound-endpoint path="${file.input.path}" responseTimeout="10000" doc:name="File"/>
+            <dw:transform-message metadata:id="e5a0b316-8e1c-4905-8c60-671a5c714fd4" doc:name="Transform Message">
+                <dw:set-payload resource="classpath:file_transform.dwl"></dw:set-payload>
+            </dw:transform-message>
+        </batch:input>
+        <batch:process-records>
+            <batch:step name="Batch_Step">
+                <db:insert config-ref="MySQL_Configuration"  doc:name="Database">
+                    <db:parameterized-query><![CDATA[INSERT INTO sites (`State Code`,`County Code`,`Site Number`,`Latitude`,`Longitude`,`Datum`,`Elevation`,`Land Use`,`Location Setting`,`Site Established Date`,`Site Closed Date`,`Met Site State Code`,`Met Site County Code`,`Met Site Site Number`,`Met Site Type`,`Met Site Distance`,`Met Site Direction`,`GMT Offset`,`Owning Agency`,`Local Site Name`,`Address`,`Zip Code`,`State Name`,`County Name`,`City Name`,`CBSA Name`,`Tribe Name`,`Extraction Date`)
+VALUES (#[payload['State Code']],#[payload['County Code']],#[payload['Site Number']],#[payload['Latitude']],#[payload['Longitude']],#[payload['Datum']],#[payload['Elevation']],#[payload['Land Use']],#[payload['Location Setting']],#[payload['Site Established Date']],#[payload['Site Closed Date']],#[payload['Met Site State Code']],#[payload['Met Site County Code']],#[payload['Met Site Site Number']],#[payload['Met Site Type']],#[payload['Met Site Distance']],#[payload['Met Site Direction']],#[payload['GMT Offset']],#[payload['Owning Agency']],#[payload['Local Site Name']],#[payload['Address']],#[payload['Zip Code']],#[payload['State Name']],#[payload['County Name']],#[payload['City Name']],#[payload['CBSA Name']],#[payload['Tribe Name']],#[payload['Extraction Date']])]]></db:parameterized-query>
+                </db:insert>
+            </batch:step>
+        </batch:process-records>
+        <batch:on-complete>
+            <logger message="&quot;Data load complete&quot;" level="INFO" doc:name="Logger"/>
+        </batch:on-complete>
+    </batch:job>
+</mule>

@@ -1,0 +1,5 @@
+Returns the data created with a previsously submitted request. 
+
+Example. To get the data created with Transaction ID = 123456789 
+
+https://aqs.epa.gov/api/retrieve?id=123456789. 

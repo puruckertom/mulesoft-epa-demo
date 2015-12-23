@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "id": "http://jsonschema.net/",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "State Code": {
+        "id": "http://jsonschema.net/StateCode",
+        "type": "string"
+      },
+      "Site Number": {
+        "id": "http://jsonschema.net/SiteNumber",
+        "type": "string"
+      },
+      "County Code": {
+        "id": "http://jsonschema.net/CountyCode",
+        "type": "string"
+      },
+      "Longitude": {
+        "id": "http://jsonschema.net/Longitude",
+        "type": "number"
+      },
+      "Latitude": {
+        "id": "http://jsonschema.net/Latitude",
+        "type": "number"
+      }
+    },
+    "required": [
+      "State Code",
+      "Site Number",
+      "County Code",
+      "Longitude",
+      "Latitude"
+    ]
+  }
+}

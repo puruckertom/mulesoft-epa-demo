@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:spring="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/apikit http://www.mulesoft.org/schema/mule/apikit/current/mule-apikit.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd">
+    <http:listener-config name="api-httpListenerConfig" host="${api.host}" port="${api.port}" doc:name="HTTP Listener Configuration" connectionIdleTimeout="60000"/>
+    <apikit:config name="api-config" raml="api.raml" consoleEnabled="true" consolePath="console" doc:name="Router"/>
+    <http:request-config name="Geocode_Request_Configuration" protocol="HTTPS" host="maps.googleapis.com" port="443" doc:name="HTTP Request Configuration"/>
+    <http:request-config name="AQS_Site_Request_Configuration" host="localhost" port="8082" basePath="/api" doc:name="HTTP Request Configuration">
+        <http:raml-api-configuration location="${site.api.raml}"/>
+    </http:request-config>
+    <http:request-config name="EPA_Request_Configuration" protocol="HTTPS" host="aqs.epa.gov" port="443" basePath="/api" doc:name="HTTP Request Configuration" responseTimeout="0">
+        <http:raml-api-configuration location="${epa.api.raml}"/>
+    </http:request-config>
+    <configuration doc:name="Configuration">
+     <expression-language>
+         <global-functions>
+             def sqrt(number) {
+                 return java.lang.Math.sqrt(number)
+             }
+             def padState(state) {
+             	if (state.length() &lt; 2) { 
+             		return java.lang.String.format("%0"+ (2 - state.length() )+"d%s",0 ,state); 
+             	} else {
+             	return state;
+             	} 
+             }
+             def padCounty(county) {
+             	if (county.length() &lt; 3) { 
+             		return java.lang.String.format("%0"+ (3 - county.length() )+"d%s",0 ,county);
+             	} else {
+             	return county;
+             	} 
+             }
+             def padSite(site){
+             	if (site.length() &lt; 4) { 
+             		return java.lang.String.format("%0"+ (4 - site.length() )+"d%s",0 ,site);
+             	} else {
+             	return site;
+             	}  
+             }
+         </global-functions>
+     </expression-language>
+ </configuration>
+    <flow name="api-main">
+        <http:listener config-ref="api-httpListenerConfig" path="/api/*" doc:name="HTTP"/>
+        <apikit:router config-ref="api-config" doc:name="APIkit Router"/>
+        <exception-strategy ref="api-apiKitGlobalExceptionMapping" doc:name="Reference Exception Strategy"/>
+    </flow>
+    <flow name="get:/aqs:api-config">
+        <http:request config-ref="Geocode_Request_Configuration" path="/maps/api/geocode/json" method="GET" doc:name="Geocode Location">
+            <http:request-builder>
+                <http:query-param paramName="address" value="#[message.inboundProperties.'http.query.params'.address.replaceAll(&quot; &quot;,&quot;+&quot;)]"/>
+                <http:query-param paramName="key" value="${geocode.api.key}"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message metadata:id="55b03d2e-4fd2-497f-a7f6-4171f1cb81d1" doc:name="Transform location">
+            <dw:input-payload doc:sample="json.json"/>
+            <dw:set-payload resource="classpath:transform_geolocation.dwl"></dw:set-payload>
+            <dw:set-variable variableName="origin" resource="classpath:transform_geolocation_var.dwl"></dw:set-variable>
+        </dw:transform-message>
+        <http:request config-ref="AQS_Site_Request_Configuration" path="/sites" method="GET" doc:name="Get Sites">
+            <http:request-builder>
+                <http:query-param paramName="longitude" value="#[payload.longitude]"/>
+                <http:query-param paramName="latitude" value="#[payload.latitude]"/>
+            </http:request-builder>
+        </http:request>
+        <dw:transform-message doc:name="Transform site details">
+            <dw:input-payload doc:sample="list_json.json"/>
+            <dw:set-payload resource="classpath:transform_sites.dwl"></dw:set-payload>
+        </dw:transform-message>
+        <foreach collection="#[payload]" doc:name="For Each">
+            <choice doc:name="Is this the first site?">
+                <when expression="#[flowVars.closest != null]">
+                    <choice doc:name="Subsequent site closer?">
+                        <when expression="#[payload.distance &lt; flowVars.closest.distance]">
+                            <set-variable variableName="closest" value="#[payload]" doc:name="Store closer site"/>
+                        </when>
+                        <otherwise>
+                            <logger level="INFO" doc:name="Ignore site"/>
+                        </otherwise>
+                    </choice>
+                </when>
+                <when expression="#[flowVars.closest == null]">
+                    <set-variable variableName="closest" value="#[payload]" doc:name="Store first site"/>
+                </when>
+                <otherwise>
+                    <logger level="INFO" doc:name="Ignore site"/>
+                </otherwise>
+            </choice>
+        </foreach>
+        <http:request config-ref="EPA_Request_Configuration" path="/rawData" method="GET" doc:name="Get AQ Data for closest site" followRedirects="true">
+            <http:request-builder>
+                <http:query-param paramName="user" value="${aqs.epa.user}"/>
+                <http:query-param paramName="pw" value="${aqs.epa.pass}"/>
+                <http:query-param paramName="format" value="DMCSV"/>
+                <http:query-param paramName="bdate" value="#[server.dateTime.plusMonths(-3).format(&quot;YYYYMMdd&quot;)]"/>
+                <http:query-param paramName="edate" value="#[server.dateTime.format(&quot;YYYYMMdd&quot;)]"/>
+                <http:query-param paramName="state" value="#[flowVars.closest.stateCode]"/>
+                <http:query-param paramName="county" value="#[flowVars.closest.countyCode]"/>
+                <http:query-param paramName="site" value="#[flowVars.closest.siteNumber]"/>
+                <http:query-param paramName="pc" value="ALL"/>
+                <http:query-param paramName="param" value="44201"/>
+            </http:request-builder>
+            <http:success-status-code-validator values="500,200"/>
+        </http:request>
+        <dw:transform-message metadata:id="eb979fb8-c413-4e51-b1de-17d9d7b960c4" doc:name="Transform to List">
+            <dw:input-payload  mimeType="application/csv"/>
+            <dw:set-payload resource="classpath:transform_response.dwl"></dw:set-payload>
+        </dw:transform-message>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <set-payload value="{&quot;status&quot; : &quot;error retrieving data&quot;}" doc:name="Set Payload"/>
+        </catch-exception-strategy>
+    </flow>
+    <apikit:mapping-exception-strategy name="api-apiKitGlobalExceptionMapping">
+        <apikit:mapping statusCode="404">
+            <apikit:exception value="org.mule.module.apikit.exception.NotFoundException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Resource not found&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="405">
+            <apikit:exception value="org.mule.module.apikit.exception.MethodNotAllowedException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Method not allowed&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="415">
+            <apikit:exception value="org.mule.module.apikit.exception.UnsupportedMediaTypeException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Unsupported media type&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="406">
+            <apikit:exception value="org.mule.module.apikit.exception.NotAcceptableException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Not acceptable&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+        <apikit:mapping statusCode="400">
+            <apikit:exception value="org.mule.module.apikit.exception.BadRequestException" />
+            <set-property propertyName="Content-Type" value="application/json" doc:name="Property"/>
+            <set-payload value="{ &quot;message&quot;: &quot;Bad request&quot; }" doc:name="Set Payload"/>
+        </apikit:mapping>
+    </apikit:mapping-exception-strategy>
+</mule>
