@@ -27,6 +27,8 @@ A Google Geocode API key is required and can be obtained from: https://developer
 
 Credentials for the EPA AQS Data API are required and can be obtained from: https://aqs.epa.gov/signup
 
+The main definition of the data flow configuration is contained in XML file(s) under the "src/main/app/" folder for each contained project.
+
 Usage
 -----
 
